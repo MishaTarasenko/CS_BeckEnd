@@ -1,10 +1,18 @@
 package ukma.repository;
 
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import ukma.model.entity.ProductCategoryEntity;
 import ukma.model.entity.ProductEntity;
+import ukma.util.HibernateUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.HashMap;
 import java.util.List;
 
 public class ProductRepository {
@@ -126,6 +134,27 @@ public class ProductRepository {
         } finally {
             em.close();
         }
+    }
+
+    public List<ProductEntity> findAllByCriteria(HashMap<String, Object> criteria) {
+        Session session = HibernateUtil.getHibernateSession();
+        CriteriaBuilder cb = session.getCriteriaBuilder();
+        CriteriaQuery<ProductEntity> cr = cb.createQuery(ProductEntity.class);
+        Root<ProductEntity> root = cr.from(ProductEntity.class);
+
+        System.out.println(criteria.toString());
+
+        if (criteria.isEmpty()) {
+            cr.select(root);
+        } else {
+            if (criteria.containsKey("categoryId")) {}
+                cr.select(root).where(cb.equal(root.get("categoryId"), criteria.get("categoryId")));
+            if (criteria.containsKey("name"))
+                cr.select(root).where(cb.like(root.get("name"), "%" + criteria.get("name") + "%"));
+        }
+
+        Query<ProductEntity> query = session.createQuery(cr);
+        return query.getResultList();
     }
 
     public void close() {

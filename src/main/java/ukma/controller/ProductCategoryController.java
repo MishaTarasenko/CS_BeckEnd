@@ -6,6 +6,8 @@ import ukma.model.entity.ProductCategoryEntity;
 import ukma.services.category.ProductCategoryService;
 import ukma.util.Handler;
 
+import java.io.DataInput;
+import java.util.HashMap;
 import java.util.List;
 
 public class ProductCategoryController extends Handler implements HttpHandler {

@@ -7,6 +7,7 @@ import ukma.repository.ProductRepository;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
+import java.util.HashMap;
 import java.util.List;
 
 public class ProductService {
@@ -52,6 +53,10 @@ public class ProductService {
 
     public List<ProductEntity> getAll() {
         return repository.findAll();
+    }
+
+    public List<ProductEntity> getAllByCriteria(HashMap<String, Object> criteria) {
+        return repository.findAllByCriteria(criteria);
     }
 
     public ProductEntity getById(Integer id) {

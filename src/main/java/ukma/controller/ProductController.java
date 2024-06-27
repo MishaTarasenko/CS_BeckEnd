@@ -2,11 +2,13 @@ package ukma.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import ukma.model.entity.ProductCategoryEntity;
 import ukma.model.entity.ProductEntity;
 import ukma.model.view.ProductView;
 import ukma.services.product.ProductService;
 import ukma.util.Handler;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class ProductController extends Handler implements HttpHandler {
@@ -23,7 +25,8 @@ public class ProductController extends Handler implements HttpHandler {
 
             switch (method) {
                 case "GET":
-                    if (path.contains("all")) getAll(exchange);
+                    if (path.contains("all/criteria")) getAllByCriteria(exchange);
+                    else if (path.contains("all")) getAll(exchange);
                     else get(exchange, id);
                     break;
                 case "POST":
@@ -69,6 +72,27 @@ public class ProductController extends Handler implements HttpHandler {
         try {
             List<ProductEntity> products = null;
             products = service.getAll();
+            String response = mapper.writeValueAsString(products);
+            sendResponse(exchange, 200, response);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            sendError(exchange, 500, "Internal Server Error");
+        }
+    }
+
+    private void getAllByCriteria(HttpExchange exchange) throws Exception {
+        try {
+            byte[] reqBody = exchange.getRequestBody().readAllBytes();
+            if(reqBody == null) sendError(exchange, 400, "Bad Request");
+            HashMap<String, Object> criteria;
+            try {
+                criteria = mapper.readValue(reqBody, HashMap.class);
+            } catch (Exception e) {
+                sendError(exchange, 409, e.getMessage());
+                return;
+            }
+            List<ProductEntity> products = null;
+            products = service.getAllByCriteria(criteria);
             String response = mapper.writeValueAsString(products);
             sendResponse(exchange, 200, response);
         } catch (Exception e) {

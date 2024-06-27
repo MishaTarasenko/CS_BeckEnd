@@ -40,9 +40,12 @@ public class ProductEntity {
     private Double price;
 
     @NotNull
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private ProductCategoryEntity category;
+
+    @Column(name = "category_id", insertable = false, updatable = false)
+    private Integer categoryId;
 
     public ProductEntity(String name, String description, String producer, Integer quantity, Double price, ProductCategoryEntity category) {
         this.name = name;
