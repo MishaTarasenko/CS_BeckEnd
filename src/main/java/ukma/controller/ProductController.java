@@ -2,7 +2,6 @@ package ukma.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import ukma.model.entity.ProductCategoryEntity;
 import ukma.model.entity.ProductEntity;
 import ukma.model.view.ProductView;
 import ukma.services.product.ProductService;
@@ -25,12 +24,12 @@ public class ProductController extends Handler implements HttpHandler {
 
             switch (method) {
                 case "GET":
-                    if (path.contains("all/criteria")) getAllByCriteria(exchange);
-                    else if (path.contains("all")) getAll(exchange);
+                    if (path.contains("all")) getAll(exchange);
                     else get(exchange, id);
                     break;
                 case "POST":
-                    post(exchange, id);
+                    if (path.contains("all/criteria")) getAllByCriteria(exchange);
+                    else post(exchange, id);
                     break;
                 case "PUT":
                     put(exchange);
