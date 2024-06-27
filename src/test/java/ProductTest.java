@@ -1,33 +1,47 @@
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ukma.model.entity.ProductCategoryEntity;
+import ukma.model.entity.ProductEntity;
+import ukma.model.view.ProductView;
 import ukma.services.category.ProductCategoryService;
+import ukma.services.product.ProductService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class ProductTest {
 
-    ProductCategoryService service = new ProductCategoryService();
+    ProductCategoryService productCategoryService = new ProductCategoryService();
+    ProductService service = new ProductService();
     ProductCategoryEntity category;
+    Integer categoryId;
+    ProductView product;
 
     @BeforeEach
     void setUp() {
-        category = new ProductCategoryEntity("test name", "test description");
+        category = new ProductCategoryEntity("test name", "test category");
+        categoryId = productCategoryService.create(category);
+        product = new ProductView("test name", "test description", "I", 99.9, categoryId, 10);
+    }
+
+    @AfterEach
+    void tearDown() {
+        productCategoryService.delete(categoryId);
     }
 
     @Test
-    public void createProductCategoryWithCorrectDataTest() {
-        Integer id = service.create(category);
+    public void createProductWithCorrectDataTest() {
+        Integer id = service.create(product);
         assertEquals(1, service.getAll().size());
         service.delete(id);
     }
 
     @Test
-    public void cantCreateProductCategoryWithNullFiledsTest() {
+    public void cantCreateProductWithNullFieldsTest() {
         try {
-            category.setName("    ");
-            Integer id = service.create(category);
+            product.setName("    ");
+            Integer id = service.create(product);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -35,52 +49,40 @@ public class ProductTest {
     }
 
     @Test
-    public void cantCreateProductCategoryWithSameNameTest() {
-        Integer id = service.create(category);
-        try {
-            service.create(category);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        assertEquals(1, service.getAll().size());
-        service.delete(id);
-    }
-
-    @Test
     public void updateProductCategoryTest() {
-        Integer id = service.create(category);
+        Integer id = service.create(product);
         assertEquals(1, service.getAll().size());
 
-        ProductCategoryEntity updatedCategory = new ProductCategoryEntity(id, "new name", "new description");
-        service.update(updatedCategory);
+        ProductView updatedProduct = new ProductView(id, "new name", "new description", "I", 10, 99.9, categoryId);
+        service.update(updatedProduct);
 
-        ProductCategoryEntity c = service.getById(id);
-        assertNotEquals(c.getName(), category.getName());
-        assertNotEquals(c.getDescription(), category.getDescription());
+        ProductEntity c = service.getById(id);
+        assertNotEquals(c.getName(), product.getName());
+        assertNotEquals(c.getDescription(), product.getDescription());
 
         service.delete(id);
     }
 
     @Test
     public void getProductCategoryTest() {
-        Integer id = service.create(category);
+        Integer id = service.create(product);
         assertEquals(1, service.getAll().size());
 
-        ProductCategoryEntity c = service.getById(id);
+        ProductEntity c = service.getById(id);
         assertEquals(id, c.getId());
-        assertEquals(category.getName(), c.getName());
-        assertEquals(category.getDescription(), c.getDescription());
+        assertEquals(product.getName(), c.getName());
+        assertEquals(product.getDescription(), c.getDescription());
 
         service.delete(id);
     }
 
     @Test
     public void getAllProductCategoriesTest() {
-        Integer id1 = service.create(category);
-        ProductCategoryEntity categoryTwo = new ProductCategoryEntity("test name-2", "test description");
-        Integer id2 = service.create(categoryTwo);
-        ProductCategoryEntity categoryThree = new ProductCategoryEntity("test name-3", "test description");
-        Integer id3 = service.create(categoryThree);
+        Integer id1 = service.create(product);
+        ProductView productTwo = new ProductView("test name1", "test description1", "I", 99.9, categoryId, 10);
+        Integer id2 = service.create(productTwo);
+        ProductView productThree = new ProductView("test name2", "test description2", "I", 99.9, categoryId, 10);
+        Integer id3 = service.create(productThree);
 
         assertEquals(3, service.getAll().size());
 

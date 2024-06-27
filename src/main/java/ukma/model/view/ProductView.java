@@ -19,4 +19,13 @@ public class ProductView {
     private Integer quantity;
     private Double price;
     private Integer categoryId;
+
+    public ProductView(String name, String description, String producer, Double price, Integer categoryId, Integer quantity) {
+        this.name = name;
+        this.description = description;
+        this.producer = producer;
+        this.price = price;
+        this.categoryId = categoryId;
+        this.quantity = quantity;
+    }
 }
