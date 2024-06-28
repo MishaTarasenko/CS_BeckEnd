@@ -1,6 +1,9 @@
 package ukma;
 
-import com.sun.net.httpserver.*;
+import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
 import ukma.controller.LoginController;
 import ukma.controller.ProductCategoryController;
 import ukma.controller.ProductController;
@@ -15,7 +18,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException {
@@ -52,7 +56,19 @@ public class Main {
         productContext.setAuthenticator(new Auth());
         productContext.getFilters().add(new CORSFilter());
 
-        server.setExecutor(Executors.newCachedThreadPool());
+
+        int corePoolSize = 10;
+        int maximumPoolSize = 20;
+        long keepAliveTime = 5000;
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                TimeUnit.MILLISECONDS,
+                new java.util.concurrent.LinkedBlockingQueue<Runnable>()
+        );
+
+        server.setExecutor(threadPoolExecutor);
         server.start();
     }
 }
