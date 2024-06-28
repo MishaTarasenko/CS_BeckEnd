@@ -1,30 +1,32 @@
 package ukma.filters;
 
-import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 
-public class CORSFilter implements HttpHandler {
-    private final HttpHandler next;
+public class CORSFilter extends Filter {
+    @Override
+    public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
+        // Set CORS headers
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:4200");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Credentials", "true");
 
-    public CORSFilter(HttpHandler next) {
-        this.next = next;
+        // If the request method is OPTIONS, respond with 204 and return
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        // Continue with the next handler in the chain
+        chain.doFilter(exchange);
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        Headers headers = exchange.getResponseHeaders();
-        headers.add("Access-Control-Allow-Origin", "http://localhost:4200");
-        headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-        headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-            exchange.sendResponseHeaders(204, -1);
-        } else {
-            next.handle(exchange);
-        }
+    public String description() {
+        return "Adds CORS headers to the response";
     }
 }
 
