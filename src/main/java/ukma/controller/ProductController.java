@@ -52,10 +52,8 @@ public class ProductController extends Handler implements HttpHandler {
 
     private void get(HttpExchange exchange, String id) throws Exception {
         try {
-            ProductEntity product = null;
-            try {
-                product = service.getById(Integer.parseInt(id));
-            } catch (Exception e) {
+            ProductEntity product = get(Integer.parseInt(id));
+            if (product == null) {
                 sendError(exchange, 404, "Product with id " + id + " not found");
                 return;
             }
@@ -104,12 +102,9 @@ public class ProductController extends Handler implements HttpHandler {
         try {
             byte[] reqBody = exchange.getRequestBody().readAllBytes();
             if(reqBody == null) sendError(exchange, 400, "Bad Request");
-            ProductView product = null;
-            try {
-                product = mapper.readValue(reqBody, ProductView.class);
-                System.out.println(product.toString());
-            } catch (Exception e) {
-                sendError(exchange, 409, e.getMessage());
+            ProductView product = map(reqBody);
+            if (product == null) {
+                sendError(exchange, 409, "Bad Request");
                 return;
             }
             Integer id = null;
@@ -132,17 +127,14 @@ public class ProductController extends Handler implements HttpHandler {
             byte[] reqBody = exchange.getRequestBody().readAllBytes();
             if(reqBody == null) sendError(exchange, 400, "Bad Request");
             Integer productId = Integer.parseInt(id);
-            try {
-                service.getById(Integer.parseInt(id));
-            } catch (Exception e) {
+            if (!isProductExists(productId)) {
                 sendError(exchange, 404, "Product with id " + id + " not found");
                 return;
             }
-            ProductView updatedProduct = null;
-            try {
-                updatedProduct = mapper.readValue(reqBody, ProductView.class);
-            } catch (Exception e) {
-                sendError(exchange, 409, e.getMessage());
+            ProductView updatedProduct = map(reqBody);
+            if (updatedProduct == null) {
+                sendError(exchange, 409, "Bad Request");
+                return;
             }
             updatedProduct.setId(productId);
             boolean resp = false;
@@ -150,6 +142,7 @@ public class ProductController extends Handler implements HttpHandler {
                 resp = service.update(updatedProduct);
             } catch (Exception e) {
                 sendError(exchange, 401, e.getMessage());
+                return;
             }
             if (resp)
                 sendResponse(exchange, 204, "");
@@ -164,9 +157,7 @@ public class ProductController extends Handler implements HttpHandler {
     private void delete(HttpExchange exchange, String id) throws Exception {
         try {
             Integer productId = Integer.parseInt(id);
-            try {
-                service.getById(Integer.parseInt(id));
-            } catch (Exception e) {
+            if (!isProductExists(productId)) {
                 sendError(exchange, 404, "Product with id " + id + " not found");
                 return;
             }
@@ -178,6 +169,31 @@ public class ProductController extends Handler implements HttpHandler {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             sendError(exchange, 500, "Internal Server Error");
+        }
+    }
+
+    private ProductEntity get(Integer id) throws Exception {
+        try {
+            return service.getById(id);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean isProductExists(Integer id) {
+        try {
+            service.getById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private ProductView map(byte[] reqBody) throws Exception {
+        try {
+            return mapper.readValue(reqBody, ProductView.class);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

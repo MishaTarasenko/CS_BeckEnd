@@ -48,11 +48,9 @@ public class ProductCategoryController extends Handler implements HttpHandler {
 
     private void get(HttpExchange exchange, String id) throws Exception {
         try {
-            ProductCategoryEntity category = null;
-            try {
-                category = service.getById(Integer.parseInt(id));
-            } catch (Exception e) {
-                sendError(exchange, 404, "Category with id " + id + " not found");
+            ProductCategoryEntity category = get(Integer.parseInt(id));
+            if (category == null) {
+                sendError(exchange, 404, "Category not found");
                 return;
             }
             String response = mapper.writeValueAsString(category);
@@ -79,12 +77,9 @@ public class ProductCategoryController extends Handler implements HttpHandler {
         try {
             byte[] reqBody = exchange.getRequestBody().readAllBytes();
             if(reqBody == null) sendError(exchange, 400, "Bad Request");
-            ProductCategoryEntity category = null;
-            try {
-                category = mapper.readValue(reqBody, ProductCategoryEntity.class);
-                System.out.println(category.toString());
-            } catch (Exception e) {
-                sendError(exchange, 409, e.getMessage());
+            ProductCategoryEntity category = map(reqBody);
+            if (category == null) {
+                sendError(exchange, 400, "Bad Request");
                 return;
             }
             Integer id = null;
@@ -107,17 +102,14 @@ public class ProductCategoryController extends Handler implements HttpHandler {
             byte[] reqBody = exchange.getRequestBody().readAllBytes();
             if(reqBody == null) sendError(exchange, 400, "Bad Request");
             Integer categoryId = Integer.parseInt(id);
-            try {
-                service.getById(Integer.parseInt(id));
-            } catch (Exception e) {
+            if (!isCategoryExists(categoryId)) {
                 sendError(exchange, 404, "Category with id " + id + " not found");
                 return;
             }
-            ProductCategoryEntity updatedCategory = null;
-            try {
-                updatedCategory = mapper.readValue(reqBody, ProductCategoryEntity.class);
-            } catch (Exception e) {
-                sendError(exchange, 409, e.getMessage());
+            ProductCategoryEntity updatedCategory = map(reqBody);
+            if (updatedCategory == null) {
+                sendError(exchange, 400, "Bad Request");
+                return;
             }
             updatedCategory.setId(categoryId);
             boolean resp = false;
@@ -139,9 +131,7 @@ public class ProductCategoryController extends Handler implements HttpHandler {
     private void delete(HttpExchange exchange, String id) throws Exception {
         try {
             Integer categoryId = Integer.parseInt(id);
-            try {
-                service.getById(Integer.parseInt(id));
-            } catch (Exception e) {
+            if (!isCategoryExists(categoryId)) {
                 sendError(exchange, 404, "Category with id " + id + " not found");
                 return;
             }
@@ -153,6 +143,31 @@ public class ProductCategoryController extends Handler implements HttpHandler {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             sendError(exchange, 500, "Internal Server Error");
+        }
+    }
+
+    private ProductCategoryEntity get(Integer id) throws Exception {
+        try {
+            return service.getById(id);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean isCategoryExists(Integer id) {
+        try {
+            service.getById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private ProductCategoryEntity map(byte[] reqBody) throws Exception {
+        try {
+            return mapper.readValue(reqBody, ProductCategoryEntity.class);
+        } catch (Exception e) {
+            return null;
         }
     }
 }
