@@ -1,9 +1,6 @@
 package ukma.model.view;
 
-import com.sun.istack.NotNull;
 import lombok.*;
-
-import javax.persistence.Column;
 
 @Getter
 @Setter

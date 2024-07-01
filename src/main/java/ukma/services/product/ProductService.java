@@ -2,6 +2,7 @@ package ukma.services.product;
 
 import ukma.merger.ProductMerger;
 import ukma.model.entity.ProductEntity;
+import ukma.model.response.ProductResponse;
 import ukma.model.view.ProductView;
 import ukma.repository.ProductRepository;
 
@@ -51,15 +52,33 @@ public class ProductService {
         }
     }
 
-    public List<ProductEntity> getAll() {
-        return repository.findAll();
+    public List<ProductResponse> getAll() {
+        return buildListResponse(repository.findAll());
     }
 
-    public List<ProductEntity> getAllByCriteria(HashMap<String, Object> criteria) {
-        return repository.findAllByCriteria(criteria);
+    public List<ProductResponse> getAllByCriteria(HashMap<String, Object> criteria) {
+        return buildListResponse(repository.findAllByCriteria(criteria));
     }
 
-    public ProductEntity getById(Integer id) {
-        return repository.findById(id);
+    public ProductResponse getById(Integer id) {
+        return buildResponse(repository.findById(id));
+    }
+
+    private List<ProductResponse> buildListResponse(List<ProductEntity> entities) {
+        return entities.stream()
+                .map(e -> buildResponse(e))
+                .toList();
+    }
+
+    private ProductResponse buildResponse(ProductEntity entity) {
+        return ProductResponse.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .producer(entity.getProducer())
+                .quantity(entity.getQuantity())
+                .price(entity.getPrice())
+                .category(entity.getCategory().getName())
+                .build();
     }
 }

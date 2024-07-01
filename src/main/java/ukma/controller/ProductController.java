@@ -2,7 +2,7 @@ package ukma.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import ukma.model.entity.ProductEntity;
+import ukma.model.response.ProductResponse;
 import ukma.model.view.ProductView;
 import ukma.services.product.ProductService;
 import ukma.util.Handler;
@@ -52,7 +52,7 @@ public class ProductController extends Handler implements HttpHandler {
 
     private void get(HttpExchange exchange, String id) throws Exception {
         try {
-            ProductEntity product = get(Integer.parseInt(id));
+            ProductResponse product = get(Integer.parseInt(id));
             if (product == null) {
                 sendError(exchange, 404, "Product with id " + id + " not found");
                 return;
@@ -67,7 +67,7 @@ public class ProductController extends Handler implements HttpHandler {
 
     private void getAll(HttpExchange exchange) throws Exception {
         try {
-            List<ProductEntity> products = null;
+            List<ProductResponse> products = null;
             products = service.getAll();
             String response = mapper.writeValueAsString(products);
             sendResponse(exchange, 200, response);
@@ -88,7 +88,7 @@ public class ProductController extends Handler implements HttpHandler {
                 sendError(exchange, 409, e.getMessage());
                 return;
             }
-            List<ProductEntity> products = null;
+            List<ProductResponse> products = null;
             products = service.getAllByCriteria(criteria);
             String response = mapper.writeValueAsString(products);
             sendResponse(exchange, 200, response);
@@ -172,7 +172,7 @@ public class ProductController extends Handler implements HttpHandler {
         }
     }
 
-    private ProductEntity get(Integer id) throws Exception {
+    private ProductResponse get(Integer id) throws Exception {
         try {
             return service.getById(id);
         } catch (Exception e) {
